@@ -1,3 +1,25 @@
+# Local AI instructions, tools and generated working documents
+AGENTS.md
+AGENTS.local.md
+AGENTS.override.md
+CLAUDE.md
+GEMINI.md
+.agent/
+.agents/
+.codex/
+.claude/
+.cursor/
+.continue/
+.aider*
+.cursorrules
+.windsurfrules
+.mcp.json
+.github/copilot-instructions.md
+.github/instructions/
+.github/prompts/
+docs/superpowers/
+docs/verification.md
+
 # Local caches, data and automation
 .pnpm-store/
 .superpowers/
