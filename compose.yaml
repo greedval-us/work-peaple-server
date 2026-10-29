@@ -5,6 +5,9 @@ x-api-environment: &api-environment
   GRPC_HOST: 0.0.0.0
   GRPC_PORT: 50051
   HEALTHCHECK_TIMEOUT_MS: ${HEALTHCHECK_TIMEOUT_MS:-3000}
+  AUTH_SESSION_TTL_SECONDS: ${AUTH_SESSION_TTL_SECONDS:-43200}
+  AUTH_LOGIN_MAX_ATTEMPTS: ${AUTH_LOGIN_MAX_ATTEMPTS:-5}
+  AUTH_LOGIN_WINDOW_SECONDS: ${AUTH_LOGIN_WINDOW_SECONDS:-300}
   DATABASE_URL: postgresql://${POSTGRES_USER:-workpeople}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-workpeople}
   REDIS_URL: redis://:${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}@redis:6379/0
   GRPC_TLS_ENABLED: ${GRPC_TLS_ENABLED:-false}
@@ -14,6 +17,23 @@ x-api-environment: &api-environment
   GRPC_TLS_SERVER_NAME: ${GRPC_TLS_SERVER_NAME:-}
 
 services:
+  verify:
+    profiles: ["tools"]
+    image: workpeople-server:verified
+    build:
+      context: .
+      target: verify
+    init: true
+    command: ["npm", "run", "test:database"]
+    environment: *api-environment
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+
   api:
     image: workpeople-server:local
     build:

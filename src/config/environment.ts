@@ -8,6 +8,9 @@ export interface ServerConfig {
   readonly grpcTlsCertPath?: string;
   readonly grpcTlsKeyPath?: string;
   readonly healthcheckTimeoutMs: number;
+  readonly sessionTtlSeconds: number;
+  readonly authLoginMaxAttempts: number;
+  readonly authLoginWindowSeconds: number;
 }
 
 type Environment = Record<string, string | undefined>;
@@ -61,5 +64,8 @@ export function parseEnvironment(environment: Environment): ServerConfig {
     grpcTlsCertPath,
     grpcTlsKeyPath,
     healthcheckTimeoutMs: integer(environment, 'HEALTHCHECK_TIMEOUT_MS', 3000, 30000),
+    sessionTtlSeconds: integer(environment, 'AUTH_SESSION_TTL_SECONDS', 43200, 2592000),
+    authLoginMaxAttempts: integer(environment, 'AUTH_LOGIN_MAX_ATTEMPTS', 5, 100),
+    authLoginWindowSeconds: integer(environment, 'AUTH_LOGIN_WINDOW_SECONDS', 300, 3600),
   });
 }

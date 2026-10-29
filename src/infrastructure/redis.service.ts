@@ -35,8 +35,20 @@ export class RedisService implements OnModuleInit, OnApplicationShutdown {
     await this.client.withCommandOptions({ timeout: this.commandTimeoutMs }).ping();
   }
 
+  async consumeLimit(key: string, limit: number, windowSeconds: number): Promise<boolean> {
+    if (!this.client.isReady) throw new Error('Redis is not ready');
+    const count = await this.client.withCommandOptions({ timeout: this.commandTimeoutMs }).eval(
+      `local count = redis.call('INCR', KEYS[1])
+       if count == 1 then redis.call('EXPIRE', KEYS[1], ARGV[1]) end
+       return count`,
+      { keys: [key], arguments: [String(windowSeconds)] },
+    );
+    if (typeof count !== 'number') throw new Error('Invalid rate limiter response');
+    return count <= limit;
+  }
+
   onApplicationShutdown(): void {
-    // No business writes exist yet; discard pending health probes and stop reconnect timers.
+    // Discard pending commands and stop reconnect timers during application shutdown.
     if (this.client.isOpen) this.client.destroy();
   }
 }

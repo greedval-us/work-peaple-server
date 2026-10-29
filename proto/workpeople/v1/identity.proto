@@ -1,0 +1,39 @@
+syntax = "proto3";
+package workpeople.v1;
+
+message Permission {
+  string id = 1;
+  string code = 2;
+  string resource = 3;
+  string name = 4;
+  string description = 5;
+}
+
+message Role {
+  string id = 1;
+  string code = 2;
+  string name = 3;
+  string description = 4;
+  bool is_system = 5;
+  repeated string permission_codes = 6;
+  string created_at = 7;
+  string updated_at = 8;
+}
+
+message User {
+  string id = 1;
+  string login = 2;
+  string first_name = 3;
+  string last_name = 4;
+  string middle_name = 5;
+  string email = 6;
+  string phone = 7;
+  bool is_active = 8;
+  string created_at = 9;
+  string updated_at = 10;
+  string last_login_at = 11;
+  repeated Role roles = 12;
+  repeated string permissions = 13;
+}
+
+message Empty {}

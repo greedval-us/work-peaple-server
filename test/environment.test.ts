@@ -14,6 +14,9 @@ test('environment provides documented local defaults', () => {
   assert.equal(config.grpcPort, 50051);
   assert.equal(config.grpcTlsEnabled, false);
   assert.equal(config.healthcheckTimeoutMs, 3000);
+  assert.equal(config.sessionTtlSeconds, 43200);
+  assert.equal(config.authLoginMaxAttempts, 5);
+  assert.equal(config.authLoginWindowSeconds, 300);
 });
 
 test('environment rejects invalid ports, timeouts and booleans', () => {
@@ -30,6 +33,10 @@ test('environment rejects invalid ports, timeouts and booleans', () => {
     () => parseEnvironment({ ...required, GRPC_TLS_ENABLED: 'yes' }),
     /GRPC_TLS_ENABLED/,
   );
+  for (const name of ['AUTH_SESSION_TTL_SECONDS', 'AUTH_LOGIN_MAX_ATTEMPTS', 'AUTH_LOGIN_WINDOW_SECONDS']) {
+    assert.throws(() => parseEnvironment({ ...required, [name]: '0' }), new RegExp(name));
+    assert.throws(() => parseEnvironment({ ...required, [name]: 'not-an-integer' }), new RegExp(name));
+  }
 });
 
 test('environment requires database URLs without echoing credentials', () => {

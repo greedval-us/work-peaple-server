@@ -1,0 +1,26 @@
+syntax = "proto3";
+package workpeople.v1;
+import "identity.proto";
+
+service AuthService {
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc GetCurrentUser(Empty) returns (User);
+  rpc Logout(Empty) returns (Empty);
+  rpc ChangePassword(ChangePasswordRequest) returns (Empty);
+}
+
+message LoginRequest {
+  string login = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string session_token = 1;
+  string expires_at = 2;
+  User user = 3;
+}
+
+message ChangePasswordRequest {
+  string current_password = 1;
+  string new_password = 2;
+}

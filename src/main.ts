@@ -27,7 +27,7 @@ async function bootstrap(): Promise<void> {
     transport: Transport.GRPC,
     options: {
       package: 'workpeople.v1',
-      protoPath: resolve('proto/workpeople/v1/health.proto'),
+      protoPath: ['health.proto', 'auth.proto', 'access.proto'].map((file) => resolve('proto/workpeople/v1', file)),
       url: `${host}:${config.grpcPort}`,
       credentials,
       loader: { keepCase: false, defaults: true, longs: String, enums: String, oneofs: true },

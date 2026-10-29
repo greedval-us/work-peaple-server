@@ -10,6 +10,7 @@ COPY src ./src
 COPY scripts ./scripts
 COPY test ./test
 COPY proto ./proto
+COPY migrations ./migrations
 RUN npm run typecheck && npm test && npm run test:integration
 
 FROM dependencies AS build

@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { resolve } from 'node:path';
 import pg from 'pg';
 import { runMigrations } from './migrations.mjs';
+import { seedInitialAccess } from './bootstrap.mjs';
 
 async function migrate() {
   const databaseUrl = process.env.DATABASE_URL;
@@ -20,6 +21,8 @@ async function migrate() {
   try {
     await client.connect();
     await runMigrations(client, resolve('migrations'));
+    const bootstrap = await seedInitialAccess(client);
+    if (bootstrap.created) console.log('Initial administrator account created');
   } finally {
     await client.end();
   }
