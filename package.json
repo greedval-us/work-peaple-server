@@ -1,0 +1,36 @@
+{
+  "name": "work-people-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Work People modular NestJS gRPC server",
+  "type": "module",
+  "engines": { "node": ">=24 <25" },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/main.js",
+    "start:dev": "npm run build && concurrently --kill-others \"tsc --watch -p tsconfig.build.json --preserveWatchOutput\" \"node --watch dist/main.js\"",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json",
+    "test": "node --experimental-strip-types --test test/*.test.ts",
+    "test:integration": "npm run build && node --test test/*.integration.test.mjs",
+    "healthcheck": "node scripts/healthcheck.mjs",
+    "migration:run": "node scripts/migrate.mjs"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.14.0",
+    "@grpc/proto-loader": "^0.8.0",
+    "@nestjs/common": "12.3.2",
+    "@nestjs/core": "12.3.2",
+    "@nestjs/microservices": "12.3.2",
+    "dotenv": "^17.2.3",
+    "pg": "^8.16.3",
+    "redis": "^6.2.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/pg": "^8.15.5",
+    "concurrently": "^9.2.1",
+    "typescript": "5.9.3"
+  }
+}

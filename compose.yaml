@@ -1,0 +1,102 @@
+name: workpeople
+
+x-api-environment: &api-environment
+  NODE_ENV: production
+  GRPC_HOST: 0.0.0.0
+  GRPC_PORT: 50051
+  HEALTHCHECK_TIMEOUT_MS: ${HEALTHCHECK_TIMEOUT_MS:-3000}
+  DATABASE_URL: postgresql://${POSTGRES_USER:-workpeople}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-workpeople}
+  REDIS_URL: redis://:${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}@redis:6379/0
+  GRPC_TLS_ENABLED: ${GRPC_TLS_ENABLED:-false}
+  GRPC_TLS_CERT_PATH: ${GRPC_TLS_CERT_PATH:-./certs/server.crt}
+  GRPC_TLS_KEY_PATH: ${GRPC_TLS_KEY_PATH:-./certs/server.key}
+  GRPC_TLS_CA_PATH: ${GRPC_TLS_CA_PATH:-}
+  GRPC_TLS_SERVER_NAME: ${GRPC_TLS_SERVER_NAME:-}
+
+services:
+  api:
+    image: workpeople-server:local
+    build:
+      context: .
+      target: runtime
+    init: true
+    restart: unless-stopped
+    environment: *api-environment
+    ports:
+      - "${GRPC_BIND_ADDRESS:-127.0.0.1}:${GRPC_PORT:-50051}:50051"
+    volumes:
+      - ./certs:/app/certs:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "node", "scripts/healthcheck.mjs"]
+      interval: 15s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+    stop_grace_period: 15s
+    security_opt:
+      - no-new-privileges:true
+
+  migrate:
+    image: workpeople-server:local
+    build:
+      context: .
+      target: runtime
+    init: true
+    restart: "no"
+    command: ["node", "scripts/migrate.mjs"]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-workpeople}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-workpeople}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      disable: true
+    security_opt:
+      - no-new-privileges:true
+
+  postgres:
+    image: postgres:18-bookworm
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-workpeople}
+      POSTGRES_DB: ${POSTGRES_DB:-workpeople}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    stop_grace_period: 30s
+
+  redis:
+    image: redis:8-bookworm
+    restart: unless-stopped
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+    command:
+      - sh
+      - -c
+      - exec redis-server --appendonly yes --appendfsync everysec --requirepass "$$REDIS_PASSWORD"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "REDISCLI_AUTH=\"$$REDIS_PASSWORD\" redis-cli ping | grep -q PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    stop_grace_period: 15s
+
+volumes:
+  postgres_data:
+  redis_data:

@@ -1,3 +1,29 @@
+# Local caches, data and automation
+.pnpm-store/
+.superpowers/
+.worktrees/
+.data/
+backups/
+*.dump
+*.sql.gz
+
+# Local settings and secrets; keep examples and lockfiles in Git
+.env.*
+!.env.example
+!.env.*.example
+certs/*
+!certs/.gitkeep
+*.key
+*.p12
+*.pfx
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.DS_Store
+Thumbs.db
+Desktop.ini
+
 # Logs
 logs
 *.log
